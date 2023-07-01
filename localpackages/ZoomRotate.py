@@ -8,7 +8,7 @@ from ultralytics import YOLO
 class ZoomRotate:
     def __init__(self):
         try:
-            self.model_yolo =  YOLO('localpackages/model/yolov8s_6_2023.pt') 
+            self.model_yolo =  YOLO('model/yolov8s_6_2023.pt') 
         except Exception as e :
             print("constructor Exception",e)
         
