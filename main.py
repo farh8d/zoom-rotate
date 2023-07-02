@@ -15,12 +15,17 @@ def editor(request: Request):
             'images': [ "url/one",
                         "url/two",
                         ...
-                      ]
+                      ],
+            'height_fraction' : 0.5
+            'gyroscopic_angles' : [0 , 0 , -5 , 0 , 6 , ...]
            }
 
     :return: a zip file include all images in batch
              flask send_file(zip file)
     """
+
+    height_fraction = request.json['height_fraction']
+    gyroscopic_angles = request.json['gyroscopic_angles']
     images = []
     for i in request.json['images']:
 
@@ -30,26 +35,28 @@ def editor(request: Request):
         img = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
         images.append(img)
 
-    outputs = rotate_zoom_all_files(images)
+    outputs = rotate_zoom_all_files(images , height_fraction , gyroscopic_angles)
 
     imgs = zipping(outputs)
     return send_file(imgs, mimetype='application/zip', as_attachment=True, download_name='images.zip')
 
 
 
-def rotate_zoom_all_files(images):
+def rotate_zoom_all_files(images ,  height_fraction , gyroscopic_angles):
     obj = ZR()
 
     output_imgs = []
-
+    i = 0
     for img in images:
         try:
-            img1 = obj.rotate_image(img ,5 )
-            img1 = obj.zoomIN_zoomOut(img1 , 0.45)  
+            img1 = obj.rotate_image(img ,gyroscopic_angles[i] )
+            img1 = obj.zoomIN_zoomOut(img1 , height_fraction)  
+            output_imgs.append(img1)
         except Exception as e :
             print("usage Exception",e)
+
+        i+=1
         
-        output_imgs.append(img1)
 
     return output_imgs
         

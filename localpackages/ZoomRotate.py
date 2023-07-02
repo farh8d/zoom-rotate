@@ -1,16 +1,76 @@
 import numpy as np
 import cv2
+import os
 from ultralytics import YOLO
+from google.cloud import storage
 
 
 
 
 class ZoomRotate:
     def __init__(self):
+        # model_path = '/tmp/yolov8s_6_2023.pt'
+        model_path = 'localpackages/model/yolov8s_6_2023.pt'
+
+
+        if not os.path.exists(model_path):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.environ.get('MY_CODE_DIR', '/workspace'),
+                                                                        'localpackages/credentials/pirelly360-ai-deployment-firebase-adminsdk-txp88-8d93127582.json')
+            self.download_file_from_gcs()
+
+
         try:
-            self.model_yolo =  YOLO('model/yolov8s_6_2023.pt') 
+            self.model_yolo =  YOLO(model_path) 
         except Exception as e :
             print("constructor Exception",e)
+
+
+
+    
+
+
+    def download_file_from_gcs(self, bucket_name="pirelly360-ai-deployment.appspot.com",
+                               file_name="yolov8s_6_2023.pt", local_directory="/tmp/",
+                               new_file_name=None):
+        """
+        Downloads a file from Google Cloud Storage and saves it to a local directory,
+        but only if the file does not already exist in the local directory.
+
+        Parameters:
+        bucket_name (str): the name of the Google Cloud Storage bucket.
+        file_name (str): the path of the file in the Google Cloud Storage bucket.
+        local_directory (str): the local directory where the file should be saved.
+        new_file_name (str, optional): the new name for the downloaded file. If not specified,
+            the original file name will be used.
+
+        Returns:
+        None
+        """
+        # Initialize a client object
+        client = storage.Client()
+
+        # Get the bucket and file objects
+        bucket = client.get_bucket(bucket_name)
+        blob = bucket.blob(file_name)
+
+        # Set the destination file name
+        if new_file_name is None:
+            new_file_name = os.path.basename(file_name)
+        destination_file_name = os.path.join(local_directory, new_file_name)
+
+        # Download the file only if it doesn't already exist in the local directory
+        if not os.path.exists(destination_file_name):
+            # Create the local directory if it doesn't exist
+            if not os.path.exists(local_directory):
+                os.makedirs(local_directory)
+
+            # Download the file to the local directory with the new name
+            blob.download_to_filename(destination_file_name)
+
+
+
+
+    
         
          
        
