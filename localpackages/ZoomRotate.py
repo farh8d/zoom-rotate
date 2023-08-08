@@ -9,8 +9,9 @@ from google.cloud import storage
 
 class ZoomRotate:
     def __init__(self):
-        # model_path = '/tmp/yolov8s_6_2023.pt'
-        model_path = 'localpackages/model/yolov8s_6_2023.pt'
+        # model_path = '/tmp/yolov8s_6_2023.pt'                           # for google cloud
+        model_path = 'localpackages/model/yolov8s_6_2023.pt'              # for local run
+        self.bb = {}
 
 
         if not os.path.exists(model_path):
@@ -108,19 +109,50 @@ class ZoomRotate:
         return dict
     
 
+
+
+    def centerizer(self , img ):
+        try:
+            self.bb = self.__detect_main_car(img)  
+        except Exception as e :
+            print("detect_main_car Exception",e)
+
+        if self.bb is None:
+            print("no car!!!")
+            return img
+
+        shift_x = (img.shape[1] / 2) -  int((self.bb['xmax'] + self.bb['xmin']) / 2)
+        shift_y = (img.shape[0] / 2) - int((self.bb['ymax'] + self.bb['ymin']) / 2)
+
+        # Define the transformation matrix
+        M = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
+
+        # Apply the transformation to the image
+        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))
+
+        self.bb['xmax'] += shift_x
+        self.bb['xmin'] += shift_x
+        self.bb['ymax'] += shift_y
+        self.bb['ymin'] += shift_y
+
+        return shifted_img 
     
-    def __make_new_image(self , img , bb , expected_car_heigh):
+
+
+
+    
+    def __make_new_image(self , img , expected_car_heigh):
         # make black around the image for zoom out
         new_width = img.shape[1] + 20000
         new_height = img.shape[0] + 20000
         new_img = np.zeros((new_height, new_width, 3), np.uint8)
         new_img[10000:new_height-10000, 10000:new_width-10000] = img
 
-        current_height = bb['ymax'] - bb['ymin']
+        current_height = self.bb['ymax'] - self.bb['ymin']
         scale = current_height / expected_car_heigh
         cut_size_y , cut_size_x =  scale * img.shape[0] , scale * img.shape[1]
-        car_center_x = int((bb['xmax'] + bb['xmin']) / 2) + 10000
-        car_center_y = int((bb['ymax'] + bb['ymin']) / 2) + 10000
+        car_center_x = int((self.bb['xmax'] + self.bb['xmin']) / 2) + 10000
+        car_center_y = int((self.bb['ymax'] + self.bb['ymin']) / 2) + 10000
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
         return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LINEAR)
@@ -128,28 +160,26 @@ class ZoomRotate:
 
 
 
-    def  zoomIN_zoomOut(self , img , height_fraction = 0.45 ):
+    def  zoomIN_zoomOut(self , img , height_fraction = 0.45  ):
         # get cv2 image
-        try:
-            bb = self.__detect_main_car(img)  
-        except Exception as e :
-            print("detect_main_car Exception",e)
-        
         # ckeck any car detection
-        if bb is None:
+        if self.bb is None:
             print("no car!!!")
             return img
-        h = bb['ymax'] - bb['ymin']
+        h = self.bb['ymax'] - self.bb['ymin']
         if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
             return img
         
         try:
-            final = self.__make_new_image(img, bb , int(height_fraction * img.shape[0]) ) 
+            final = self.__make_new_image(img , int(height_fraction * img.shape[0]) ) 
         except Exception as e :
             print("make_new_image Exception",e)
          
         return final
     
+
+
+
     def rotate_image(self , img, angle = 0):
         # get cv2 image
         # this function get an image and angle then rotate image by this angle

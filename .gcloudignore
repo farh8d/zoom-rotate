@@ -15,6 +15,7 @@ node_modules
 *.png
 *.HEIC
 *.heic
+*.gif
 *.h5
 
 *.zip

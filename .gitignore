@@ -13,5 +13,5 @@
 *.onnx
 *.mlmodel
 *.jpeg
-
+*.gif
 TEST.txt
