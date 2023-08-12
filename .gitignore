@@ -7,6 +7,7 @@
 *.heic
 *.h5
 *.pt
+*.pth
 *.zip
 *.rar
 *.pyc
