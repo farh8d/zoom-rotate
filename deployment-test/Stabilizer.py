@@ -20,7 +20,7 @@ class Stabilizer:
             print("constructor Exception - yolo",e)
 
         try:
-            self.angle_input_size = 299 
+            self.angle_input_size = 420 
             self.angle_model = onnxruntime.InferenceSession(angle_estimation_model_path)
             self.angle_transforms =  transforms.Compose([
                 transforms.Resize((self.angle_input_size , self.angle_input_size)),
@@ -168,7 +168,10 @@ class Stabilizer:
             cv2.imwrite(output_address , img1) 
 
         except Exception as e :
-            print("usage Exception",e)
+            print("stab run method Exception",e)
+            return False
+        
+        return True
         
 
 
