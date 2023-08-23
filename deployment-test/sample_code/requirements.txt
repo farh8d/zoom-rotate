@@ -1,5 +1,0 @@
-# minimum requirements for function execution.
-firebase-admin==6.2.0
-google-cloud==0.34.0
-google-cloud-storage==2.10.0
-onnxruntime==1.15.1
