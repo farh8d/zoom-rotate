@@ -164,10 +164,13 @@ class Stabilizer:
         return self.angle_model.run(None, {"input":img1})[0][0][0]
          
 
-    def run(self , img_address , output_address , height_fraction = 0.35):  # Done: return True  Failed: throw exception
+    def run(self , img_address , output_address , z_angle = None , height_fraction = 0.35):  # Done: return True  Failed: throw exception
         try:
             img = cv2.imread(img_address)
-            angle = self.estimate_angle(img) 
+            if z_angle is None:
+                angle = self.estimate_angle(img) 
+            else:
+                angle = z_angle
             img1 = self.rotate_image(img , -angle)
             img1 = self.centerizer(img1)
             img1 = self.zoomIN_zoomOut(img1 , height_fraction) 
