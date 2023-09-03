@@ -104,7 +104,7 @@ class Stabilizer:
         # make black around the image for zoom out
         new_width = img.shape[1] + 20000
         new_height = img.shape[0] + 20000
-        new_img = np.zeros((new_height, new_width, 3), np.uint8)
+        new_img = np.ones((new_height, new_width, 3), np.uint8) * 255
         new_img[10000:new_height-10000, 10000:new_width-10000] = img
 
         current_height = self.bb['ymax'] - self.bb['ymin']
@@ -133,7 +133,7 @@ class Stabilizer:
         except Exception as e :
             raise Exception("make_new_image Exception",e)
          
-        return final , self.bb
+        return final 
     
 
 
@@ -143,7 +143,7 @@ class Stabilizer:
         # this function get an image and angle then rotate image by this angle
         height, width = img.shape[:2]
         rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height))
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue=(255,255,255))
         return rotated_image
     
 
@@ -186,7 +186,7 @@ class Stabilizer:
 
             img1 = self.rotate_image(img , -angle)
             img1 , shift_x , shift_y , centerizer_bb = self.centerizer(img1)
-            img1 , zoom_bb = self.zoomIN_zoomOut(img1 , height_fraction) 
+            img1  = self.zoomIN_zoomOut(img1 , height_fraction) 
 
             dict["angle"] = str(angle)
             dict["centerizer_shift_x"] = str(shift_x)

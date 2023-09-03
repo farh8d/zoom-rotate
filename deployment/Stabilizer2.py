@@ -17,7 +17,7 @@ class Stabilizer2:
         M = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
 
         # Apply the transformation to the image
-        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))
+        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue=tuple([255]*img.shape[2]))
 
         return shifted_img 
 
@@ -27,7 +27,7 @@ class Stabilizer2:
         # make black around the image for zoom out
         new_width = img.shape[1] + 20000
         new_height = img.shape[0] + 20000
-        new_img = np.zeros((new_height, new_width, 3), np.uint8)
+        new_img = np.ones((new_height, new_width, 3), np.uint8) * 255
         new_img[10000:new_height-10000, 10000:new_width-10000] = img
 
         current_height = bb['ymax'] - bb['ymin']
@@ -56,6 +56,9 @@ class Stabilizer2:
     
 
 
+ 
+
+
 
 
     def rotate_image(self , img, angle = 0):
@@ -63,20 +66,21 @@ class Stabilizer2:
         # this function get an image and angle then rotate image by this angle
         height, width = img.shape[:2]
         rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height))
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue=tuple([255]*img.shape[2]))
         return rotated_image
 
 
 
     def run(self , img_address , json_address ,  output_address ):  # Done: return True  Failed: throw exception
-
-        dict = self.read_dict_from_json(json_address)
-
-        angle = eval(dict["angle"])
-        shift_X = eval(dict["centerizer_shift_x"])
-        shift_Y = eval(dict["centerizer_shift_y"])
-        yolo_after_centerizer = eval(dict["centerizer_bb"])
-        height_fraction = eval(dict["height_fraction"])
+        try:
+            dict = self.read_dict_from_json(json_address)
+            angle = eval(dict["angle"])
+            shift_X = eval(dict["centerizer_shift_x"])
+            shift_Y = eval(dict["centerizer_shift_y"])
+            yolo_after_centerizer = eval(dict["centerizer_bb"])
+            height_fraction = eval(dict["height_fraction"])
+        except Exception as e :
+            raise Exception("stab run method Exception - > read json file",e)
 
         try:
             img = cv2.imread(img_address)
