@@ -3,8 +3,8 @@ import cv2
 from ultralytics import YOLO
 from torchvision import transforms
 import onnxruntime
-import numpy as np 
 from PIL import Image
+import json
 
 
 
@@ -94,7 +94,7 @@ class Stabilizer:
         self.bb['ymax'] += shift_y
         self.bb['ymin'] += shift_y
 
-        return shifted_img 
+        return shifted_img , shift_x , shift_y , self.bb
     
 
 
@@ -133,7 +133,7 @@ class Stabilizer:
         except Exception as e :
             raise Exception("make_new_image Exception",e)
          
-        return final
+        return final , self.bb
     
 
 
@@ -162,19 +162,39 @@ class Stabilizer:
         img1 = np.array(img1)
         img1 = np.expand_dims(img1, 0).astype(np.float32)
         return self.angle_model.run(None, {"input":img1})[0][0][0]
-         
+
+
+
+
+
+    def write_dict_to_json(self, dict, file_path):
+        with open(file_path, 'w') as json_file:
+            json.dump(dict, json_file)
+
+
+
 
     def run(self , img_address , output_address , z_angle = None , height_fraction = 0.35):  # Done: return True  Failed: throw exception
+        dict = {}
+    
         try:
             img = cv2.imread(img_address)
             if z_angle is None:
                 angle = self.estimate_angle(img) 
             else:
                 angle = z_angle
+
             img1 = self.rotate_image(img , -angle)
-            img1 = self.centerizer(img1)
-            img1 = self.zoomIN_zoomOut(img1 , height_fraction) 
-            cv2.imwrite(output_address , img1) 
+            img1 , shift_x , shift_y , centerizer_bb = self.centerizer(img1)
+            img1 , zoom_bb = self.zoomIN_zoomOut(img1 , height_fraction) 
+
+            dict["angle"] = str(angle)
+            dict["centerizer_shift_x"] = str(shift_x)
+            dict["centerizer_shift_y"] = str(shift_y)
+            dict["centerizer_bb"] = str(centerizer_bb)
+            dict["height_fraction"] = str(height_fraction)
+
+            self.write_dict_to_json(dict , output_address)
 
         except Exception as e :
             raise Exception("stab run method Exception",e)
@@ -185,4 +205,8 @@ class Stabilizer:
 
         
 
+        
+
+
+      
 
