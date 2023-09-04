@@ -22,19 +22,18 @@ class Stabilizer2:
         return shifted_img 
 
 
-
     def __make_new_image(self , img , expected_car_heigh , bb):
         # make black around the image for zoom out
-        new_width = img.shape[1] + 20000
-        new_height = img.shape[0] + 20000
+        new_width = img.shape[1] + 8000
+        new_height = img.shape[0] + 8000
         new_img = np.ones((new_height, new_width, 3), np.uint8) * 255
-        new_img[10000:new_height-10000, 10000:new_width-10000] = img
+        new_img[4000:new_height-4000, 4000:new_width-4000] = img
 
         current_height = bb['ymax'] - bb['ymin']
         scale = current_height / expected_car_heigh
         cut_size_y , cut_size_x =  scale * img.shape[0] , scale * img.shape[1]
-        car_center_x = int((bb['xmax'] + bb['xmin']) / 2) + 10000
-        car_center_y = int((bb['ymax'] +bb['ymin']) / 2) + 10000
+        car_center_x = int((bb['xmax'] + bb['xmin']) / 2) + 4000
+        car_center_y = int((bb['ymax'] +bb['ymin']) / 2) + 4000
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
         return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LINEAR)

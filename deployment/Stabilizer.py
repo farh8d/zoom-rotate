@@ -99,41 +99,7 @@ class Stabilizer:
 
 
 
-    
-    def __make_new_image(self , img , expected_car_heigh):
-        # make black around the image for zoom out
-        new_width = img.shape[1] + 20000
-        new_height = img.shape[0] + 20000
-        new_img = np.ones((new_height, new_width, 3), np.uint8) * 255
-        new_img[10000:new_height-10000, 10000:new_width-10000] = img
 
-        current_height = self.bb['ymax'] - self.bb['ymin']
-        scale = current_height / expected_car_heigh
-        cut_size_y , cut_size_x =  scale * img.shape[0] , scale * img.shape[1]
-        car_center_x = int((self.bb['xmax'] + self.bb['xmin']) / 2) + 10000
-        car_center_y = int((self.bb['ymax'] + self.bb['ymin']) / 2) + 10000
-
-        cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LINEAR)
-
-
-
-
-    def  zoomIN_zoomOut(self , img , height_fraction):
-        # get cv2 image
-        # ckeck any car detection
-        if self.bb is None:
-            raise Exception("zoomIN_zoomOut -> detect_main_car No detection")
-        h = self.bb['ymax'] - self.bb['ymin']
-        if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
-            return img
-        
-        try:
-            final = self.__make_new_image(img , int(height_fraction * img.shape[0]) ) 
-        except Exception as e :
-            raise Exception("make_new_image Exception",e)
-         
-        return final 
     
 
 
@@ -174,19 +140,19 @@ class Stabilizer:
 
 
 
-    def run(self , img_address , output_address , z_angle = None , height_fraction = 0.35):  # Done: return True  Failed: throw exception
+    def run(self , img_address , output_address , z_angle = None , height_fraction = 0.4):  # Done: return True  Failed: throw exception
         dict = {}
     
         try:
             img = cv2.imread(img_address)
-            if z_angle is None:
+            # if z_angle is None:
+            if True:
                 angle = self.estimate_angle(img) 
             else:
                 angle = z_angle
 
             img1 = self.rotate_image(img , -angle)
             img1 , shift_x , shift_y , centerizer_bb = self.centerizer(img1)
-            img1  = self.zoomIN_zoomOut(img1 , height_fraction) 
 
             dict["angle"] = str(angle)
             dict["centerizer_shift_x"] = str(shift_x)

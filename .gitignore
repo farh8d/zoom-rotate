@@ -17,3 +17,5 @@
 *.jpeg
 *.gif
 TEST.txt
+
+deployment-outputs/*
