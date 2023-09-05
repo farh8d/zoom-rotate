@@ -16,8 +16,13 @@ class Stabilizer2:
         # Define the transformation matrix
         M = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
 
+        if img.shape[2] == 4:
+            borderValue = (255,255,255,0)
+        else:
+            borderValue = (255,255,255)
+
         # Apply the transformation to the image
-        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue=tuple([255]*img.shape[2]))
+        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue = borderValue)
 
         return shifted_img 
 
@@ -26,7 +31,9 @@ class Stabilizer2:
         # make black around the image for zoom out
         new_width = img.shape[1] + 8000
         new_height = img.shape[0] + 8000
-        new_img = np.ones((new_height, new_width, 3), np.uint8) * 255
+        new_img = np.ones((new_height, new_width, img.shape[2]), np.uint8) * 255
+        if img.shape[2] == 4:
+            new_img[:,:,3] = 0
         new_img[4000:new_height-4000, 4000:new_width-4000] = img
 
         current_height = bb['ymax'] - bb['ymin']
@@ -65,7 +72,13 @@ class Stabilizer2:
         # this function get an image and angle then rotate image by this angle
         height, width = img.shape[:2]
         rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue=tuple([255]*img.shape[2]))
+
+        if img.shape[2] == 4:
+            borderValue = (255,255,255,0)
+        else:
+            borderValue = (255,255,255)
+
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
         return rotated_image
 
 
@@ -82,7 +95,7 @@ class Stabilizer2:
             raise Exception("stab run method Exception - > read json file",e)
 
         try:
-            img = cv2.imread(img_address)
+            img = cv2.imread(img_address , cv2.IMREAD_UNCHANGED)  
             img1 = self.rotate_image(img , -angle)
             img1 = self.centerizer(img1 , shift_X , shift_Y)
             img1 = self.zoomIN_zoomOut(img1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer) 

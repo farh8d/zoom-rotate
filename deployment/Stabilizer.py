@@ -144,7 +144,10 @@ class Stabilizer:
         dict = {}
     
         try:
-            img = cv2.imread(img_address)
+            img = cv2.imread(img_address , cv2.IMREAD_UNCHANGED)
+
+            if img.shape[2] == 4:
+                img = img[:,:,0:3]
             # if z_angle is None:
             if True:
                 angle = self.estimate_angle(img) 
@@ -166,6 +169,11 @@ class Stabilizer:
             raise Exception("stab run method Exception",e)
         
         return True
+    
+
+
+
+    
         
 
 
