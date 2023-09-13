@@ -17,5 +17,5 @@
 *.jpeg
 *.gif
 TEST.txt
-
+*.json
 deployment-outputs/*

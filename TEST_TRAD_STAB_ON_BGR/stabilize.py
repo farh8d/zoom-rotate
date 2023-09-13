@@ -134,15 +134,12 @@ def moving_average(warp_stack, sigma_mat):
     return smoothed_warp, smoothed_trajectory, original_trajectory
 
 ## APPLYING THE SMOOTHED TRAJECTORY TO THE IMAGES
-def apply_warping_fullview(images, warp_stack, PATH=None):
+def apply_warping_fullview(images, warp_stack):
     top, bottom, left, right = get_border_pads(img_shape=images[0].shape, warp_stack=warp_stack)
     H = homography_gen(warp_stack)
     imgs = []
     for i, img in enumerate(images[1:]):
         H_tot = next(H)+np.array([[0,0,left],[0,0,top],[0,0,0]])
         img_warp = cv2.warpPerspective(img, H_tot, (img.shape[1]+left+right, img.shape[0]+top+bottom))
-        if not PATH is None:
-            filename = PATH + "".join([str(0)]*(3-len(str(i)))) + str(i) +'.png'
-            cv2.imwrite(filename, img_warp)
         imgs += [img_warp]
     return imgs

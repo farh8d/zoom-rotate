@@ -38,7 +38,8 @@ class Stabilizer:
 
 
     def __detect_main_car(self , img):
-        results = self.model_yolo(img , verbose=False , device="cpu")
+        
+        results = self.model_yolo.predict(img , verbose=False , device="cpu" , conf=.80)
         results = results[0].cpu().numpy().boxes.data
 
         if results.shape[0] == 0:
