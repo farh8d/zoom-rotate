@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import json
+from PIL import Image
 
 
 
@@ -43,7 +44,7 @@ class Stabilizer2:
         car_center_y = int((bb['ymax'] +bb['ymin']) / 2) + 4000
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LINEAR)
+        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_CUBIC)
 
 
 
@@ -70,16 +71,21 @@ class Stabilizer2:
     def rotate_image(self , img, angle = 0):
         # get cv2 image
         # this function get an image and angle then rotate image by this angle
-        height, width = img.shape[:2]
-        rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
+        # height, width = img.shape[:2]
+        # rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
 
-        if img.shape[2] == 4:
-            borderValue = (255,255,255,0)
-        else:
-            borderValue = (255,255,255)
+        # if img.shape[2] == 4:
+        #     borderValue = (255,255,255,0)
+        # else:
+        #     borderValue = (255,255,255)
 
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
-        return rotated_image
+        # rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
+        # return rotated_image
+        pil_image = Image.fromarray(img)
+
+        rotated_image = pil_image.rotate(angle, resample=Image.BICUBIC, expand=True)
+
+        return np.array(rotated_image)
 
 
 

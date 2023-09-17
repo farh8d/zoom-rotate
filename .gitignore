@@ -18,4 +18,5 @@
 *.gif
 TEST.txt
 *.json
+*.avi
 deployment-outputs/*
