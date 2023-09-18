@@ -39,7 +39,7 @@ class Stabilizer:
 
     def __detect_main_car(self , img):
         
-        results = self.model_yolo.predict(img , verbose=False , device="cpu" , conf=.80)
+        results = self.model_yolo.predict(img , verbose=False , device="cpu" , conf=.6)
         results = results[0].cpu().numpy().boxes.data
 
         if results.shape[0] == 0:
@@ -67,6 +67,17 @@ class Stabilizer:
             "xmax":  biggest_car[2] , 
             "ymax":  biggest_car[3] ,
         }
+
+
+        # car bounding box doesnt violate image axis
+        if (dict["xmin"] < img.shape[1] * 0.03) or (dict["xmax"] > img.shape[1] * 0.97) or (dict["ymin"] < img.shape[0] * 0.03) or (dict["ymax"] > img.shape[0] * 0.97):
+            return None
+
+        if ((dict["xmax"] - dict["xmin"]) < img.shape[1] * 0.2) and ((dict["ymax"] - dict["ymin"]) < img.shape[0] * 0.2) :
+            return None
+
+
+
         return dict
     
 
