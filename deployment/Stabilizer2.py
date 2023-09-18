@@ -71,28 +71,28 @@ class Stabilizer2:
     def rotate_image(self , img, angle = 0):
         # get cv2 image
         # this function get an image and angle then rotate image by this angle
-        # height, width = img.shape[:2]
-        # rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
-
-        # if img.shape[2] == 4:
-        #     borderValue = (255,255,255,0)
-        # else:
-        #     borderValue = (255,255,255)
-
-        # rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
-        # return rotated_image
-
+        height, width = img.shape[:2]
+        rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
 
         if img.shape[2] == 4:
             borderValue = (255,255,255,0)
         else:
             borderValue = (255,255,255)
 
-        pil_image = Image.fromarray(img)
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
+        return rotated_image
 
-        rotated_image = pil_image.rotate(angle, resample=Image.BICUBIC,fillcolor=borderValue, expand=False)
 
-        return np.array(rotated_image)
+        # if img.shape[2] == 4:
+        #     borderValue = (255,255,255,0)
+        # else:
+        #     borderValue = (255,255,255)
+
+        # pil_image = Image.fromarray(img)
+
+        # rotated_image = pil_image.rotate(angle, resample=Image.BICUBIC,fillcolor=borderValue, expand=False)
+
+        # return np.array(rotated_image)
 
 
 
