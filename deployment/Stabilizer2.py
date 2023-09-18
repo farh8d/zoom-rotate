@@ -23,7 +23,7 @@ class Stabilizer2:
             borderValue = (255,255,255)
 
         # Apply the transformation to the image
-        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue = borderValue)
+        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue = borderValue , flags=cv2.INTER_NEAREST)
 
         return shifted_img 
 
@@ -44,7 +44,7 @@ class Stabilizer2:
         car_center_y = int((bb['ymax'] +bb['ymin']) / 2) + 4000
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_CUBIC)
+        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_NEAREST)
 
 
 
@@ -79,20 +79,10 @@ class Stabilizer2:
         else:
             borderValue = (255,255,255)
 
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_NEAREST)
         return rotated_image
 
 
-        # if img.shape[2] == 4:
-        #     borderValue = (255,255,255,0)
-        # else:
-        #     borderValue = (255,255,255)
-
-        # pil_image = Image.fromarray(img)
-
-        # rotated_image = pil_image.rotate(angle, resample=Image.BICUBIC,fillcolor=borderValue, expand=False)
-
-        # return np.array(rotated_image)
 
 
 
