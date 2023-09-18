@@ -81,9 +81,16 @@ class Stabilizer2:
 
         # rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue)
         # return rotated_image
+
+
+        if img.shape[2] == 4:
+            borderValue = (255,255,255,0)
+        else:
+            borderValue = (255,255,255)
+
         pil_image = Image.fromarray(img)
 
-        rotated_image = pil_image.rotate(angle, resample=Image.BICUBIC, expand=True)
+        rotated_image = pil_image.rotate(angle, resample=Image.BICUBIC,fillcolor=borderValue, expand=False)
 
         return np.array(rotated_image)
 
