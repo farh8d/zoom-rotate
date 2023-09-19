@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
-from ultralytics import YOLO
+from ultralytics import RTDETR
+
 from torchvision import transforms
 import onnxruntime
 from PIL import Image
@@ -14,7 +15,7 @@ class Stabilizer:
         self.bb = {}
 
         try:
-            self.model_yolo =  YOLO(car_detection_model_path) 
+            self.model_yolo =  RTDETR(car_detection_model_path) 
         except Exception as e :
             print("constructor Exception - yolo",e)
 
@@ -39,7 +40,7 @@ class Stabilizer:
 
     def __detect_main_car(self , img):
         
-        results = self.model_yolo.predict(img , verbose=False , device="cpu" , conf=.6)
+        results = self.model_yolo.predict(img , verbose=False , device="cpu" , conf=.7)
         results = results[0].cpu().numpy().boxes.data
 
         if results.shape[0] == 0:

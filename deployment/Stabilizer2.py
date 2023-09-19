@@ -50,9 +50,9 @@ class Stabilizer2:
 
 
     def zoomIN_zoomOut(self , img , bb , height_fraction , yolo_after_centerizer):
-        h = bb['ymax'] - bb['ymin']
-        if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
-            return img
+        # h = bb['ymax'] - bb['ymin']
+        # if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
+        #     return img
         
         try:
             final = self.__make_new_image(img , int(height_fraction * img.shape[0]) ,yolo_after_centerizer ) 
