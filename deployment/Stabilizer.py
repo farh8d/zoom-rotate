@@ -153,7 +153,7 @@ class Stabilizer:
 
 
 
-    def run(self , img_address , output_address , z_angle = None , height_fraction = 0.4):  # Done: return True  Failed: throw exception
+    def run(self , img_address , output_address , z_angle = None , height_fraction = 0.4 , mode = 0):  # Done: return True  Failed: throw exception
         dict = {}
     
         try:
@@ -175,6 +175,7 @@ class Stabilizer:
             dict["centerizer_shift_y"] = str(shift_y)
             dict["centerizer_bb"] = str(centerizer_bb)
             dict["height_fraction"] = str(height_fraction)
+            dict["mode"] = str(mode)
 
             self.write_dict_to_json(dict , output_address)
 
