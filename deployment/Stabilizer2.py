@@ -80,13 +80,15 @@ class Stabilizer2:
 
 
 
-    def zoomIN_zoomOut0(self , img , bb , height_fraction , yolo_after_centerizer):
+    def zoomIN_zoomOut0(self , img , bb ,yaw, height_fraction , yolo_after_centerizer):
         # h = bb['ymax'] - bb['ymin']
         # if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
         #     return img
-        
+        side_scale = 1
+        if  (70<yaw<110) or (250<yaw<290):
+            side_scale = 0.93
         try:
-            final = self.__make_new_image0(img , int(height_fraction * img.shape[0]) ,yolo_after_centerizer ) 
+            final = self.__make_new_image0(img , int(height_fraction * img.shape[0] * side_scale) ,yolo_after_centerizer ) 
         except Exception as e :
             raise Exception("make_new_image Exception",e)
          
@@ -182,8 +184,25 @@ class Stabilizer2:
     
 
 
+    def shiftingUp(self , img , yaw):
 
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
+        height = img.shape[0]
+        scale = 0.02
+        x = np.linspace(0, 360, 360)
+        y =  ((np.sin((x - 45) / 180 * 2 * np.pi) ) + 1)/2  *  (height * scale)
+        shift_number = y[int(yaw)]
 
+        img2 = Image.fromarray(img)
+        img1 = img + 0
+        img1[:,:,:3] = 255
+        if img.shape[2] == 4:
+            img1[:,:,3] = 0
+
+        img1 = Image.fromarray(img1)
+        img2 = img2.resize((img1.width, img1.height))
+        img1.paste(img2, (0, int(-shift_number)), img2)
+        return np.array(img1)
 
 
  
@@ -198,6 +217,7 @@ class Stabilizer2:
             yolo_after_centerizer = eval(dict["centerizer_bb"])
             height_fraction = eval(dict["height_fraction"])
             mode = eval(dict["mode"])
+            yaw = eval(dict["yaw"])
         except Exception as e :
             raise Exception("stab run method Exception - > read json file",e)
 
@@ -206,7 +226,8 @@ class Stabilizer2:
             if mode == 0 or mode == 3:
                 img1 = self.rotate_image0(img , -angle)
                 img1 = self.centerizer0(img1 , shift_X , shift_Y)
-                img1 = self.zoomIN_zoomOut0(img1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)
+                img1 = self.zoomIN_zoomOut0(img1 , yolo_after_centerizer ,yaw , height_fraction , yolo_after_centerizer)
+                img1 = self.shiftingUp( img1 , yaw)
             if mode == 1 or mode == 2 :
                 img1 = self.rotate_image1(img , -angle)
                 img1 = self.centerizer1(img1 , shift_X , shift_Y)

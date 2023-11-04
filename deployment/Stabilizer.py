@@ -153,7 +153,7 @@ class Stabilizer:
 
 
 
-    def run(self , img_address , output_address , z_angle = None , height_fraction = 0.4 , mode = 0):  # Done: return True  Failed: throw exception
+    def run(self , img_address , output_address , yaw , z_angle = None  , height_fraction = 0.4 , mode = 0):  # Done: return True  Failed: throw exception
         dict = {}
     
         try:
@@ -170,6 +170,7 @@ class Stabilizer:
             img1 = self.rotate_image(img , -angle)
             img1 , shift_x , shift_y , centerizer_bb = self.centerizer(img1)
 
+            dict["yaw"] = str(yaw)
             dict["angle"] = str(angle)
             dict["centerizer_shift_x"] = str(shift_x)
             dict["centerizer_shift_y"] = str(shift_y)
