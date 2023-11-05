@@ -84,7 +84,7 @@ class Stabilizer2:
         # h = bb['ymax'] - bb['ymin']
         # if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
         #     return img
-        side_scale = 0.9
+        side_scale = 1
         # if  (70<yaw<110) or (250<yaw<290):
         #     side_scale = 0.9
 
