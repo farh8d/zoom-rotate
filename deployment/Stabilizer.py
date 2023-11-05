@@ -153,7 +153,7 @@ class Stabilizer:
 
 
 
-    def run(self , img_address , output_address , yaw , z_angle = None  , height_fraction = 0.4 , mode = 0):  # Done: return True  Failed: throw exception
+    def run(self , img_address , output_address , yaw=None , z_angle = None  , height_fraction = 0.4 , mode = 0):  # Done: return True  Failed: throw exception
         dict = {}
     
         try:

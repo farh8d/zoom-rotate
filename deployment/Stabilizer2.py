@@ -84,9 +84,11 @@ class Stabilizer2:
         # h = bb['ymax'] - bb['ymin']
         # if (height_fraction - 0.01) * img.shape[0] < h < (height_fraction + 0.01) * img.shape[0]:
         #     return img
-        side_scale = 1
-        if  (70<yaw<110) or (250<yaw<290):
-            side_scale = 0.93
+        side_scale = 0.9
+        # if  (70<yaw<110) or (250<yaw<290):
+        #     side_scale = 0.9
+
+
         try:
             final = self.__make_new_image0(img , int(height_fraction * img.shape[0] * side_scale) ,yolo_after_centerizer ) 
         except Exception as e :
@@ -227,7 +229,7 @@ class Stabilizer2:
                 img1 = self.rotate_image0(img , -angle)
                 img1 = self.centerizer0(img1 , shift_X , shift_Y)
                 img1 = self.zoomIN_zoomOut0(img1 , yolo_after_centerizer ,yaw , height_fraction , yolo_after_centerizer)
-                img1 = self.shiftingUp( img1 , yaw)
+                # img1 = self.shiftingUp( img1 , yaw)
             if mode == 1 or mode == 2 :
                 img1 = self.rotate_image1(img , -angle)
                 img1 = self.centerizer1(img1 , shift_X , shift_Y)
