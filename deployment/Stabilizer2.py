@@ -75,7 +75,7 @@ class Stabilizer2:
         car_center_y = int((bb['ymax'] +bb['ymin']) / 2) + 4000
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_NEAREST)
+        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LANCZOS4)
 
 
 
@@ -114,7 +114,7 @@ class Stabilizer2:
         car_center_y = int((bb['ymax'] + bb['ymin']) / 2) + img.shape[0]
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_NEAREST)
+        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LANCZOS4)
 
 
 
@@ -149,7 +149,7 @@ class Stabilizer2:
         else:
             borderValue = (255,255,255)
 
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_NEAREST)
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_LANCZOS4)
         return rotated_image
 
 
@@ -177,7 +177,7 @@ class Stabilizer2:
         else:
             borderValue = (255,255,255)
 
-        rotated_image = cv2.warpAffine(img1, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_NEAREST)
+        rotated_image = cv2.warpAffine(img1, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_LANCZOS4)
 
         rotated_image = rotated_image[img.shape[0]:img.shape[0]*2  , img.shape[1]:img.shape[1]*2  , :]
 
@@ -234,6 +234,8 @@ class Stabilizer2:
                 img1 = self.rotate_image1(img , -angle)
                 img1 = self.centerizer1(img1 , shift_X , shift_Y)
                 img1 = self.zoomIN_zoomOut1(img1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)  
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2,2))
+            img1 = cv2.erode(img1, kernel)
             cv2.imwrite(output_address , img1) 
 
         except Exception as e :
@@ -243,6 +245,11 @@ class Stabilizer2:
         
 
 
-        
+
+
+
+
+
+
 
 
