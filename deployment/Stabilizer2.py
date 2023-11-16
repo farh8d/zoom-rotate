@@ -234,8 +234,10 @@ class Stabilizer2:
                 img1 = self.rotate_image1(img , -angle)
                 img1 = self.centerizer1(img1 , shift_X , shift_Y)
                 img1 = self.zoomIN_zoomOut1(img1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)  
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2,2))
-            img1 = cv2.erode(img1, kernel)
+
+
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
+            img1[:,:,3] = cv2.erode(img1[:,:,3], kernel)
             cv2.imwrite(output_address , img1) 
 
         except Exception as e :
