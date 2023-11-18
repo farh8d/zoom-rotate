@@ -4,7 +4,7 @@ import json
 from PIL import Image
 
 
-
+INTERPOLATION_METHOD = cv2.INTER_AREA
 
 class Stabilizer2:
 
@@ -20,13 +20,15 @@ class Stabilizer2:
         # Define the transformation matrix
         M = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
 
-        if img.shape[2] == 4:
-            borderValue = (255,255,255,0)
+        if len(img.shape) == 2:
+            borderValue = 0
         else:
-            borderValue = (255,255,255)
+            if img.shape[2] == 4:
+                borderValue = (255,255,255,0)
+    
 
         # Apply the transformation to the image
-        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue = borderValue , flags=cv2.INTER_LINEAR)
+        shifted_img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]) ,  borderValue = borderValue , flags=INTERPOLATION_METHOD)
 
         return shifted_img
 
@@ -46,13 +48,14 @@ class Stabilizer2:
 
         M = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
 
-        if img.shape[2] == 4:
-            borderValue = (255,255,255,0)
+        if len(img.shape) == 2:
+            borderValue = 0
         else:
-            borderValue = (255,255,255)
+            if img.shape[2] == 4:
+                borderValue = (255,255,255,0)
 
         # Apply the transformation to the image
-        shifted_img = cv2.warpAffine(img1, M, (img1.shape[1], img1.shape[0]) ,  borderValue = borderValue , flags=cv2.INTER_LINEAR)
+        shifted_img = cv2.warpAffine(img1, M, (img1.shape[1], img1.shape[0]) ,  borderValue = borderValue , flags=INTERPOLATION_METHOD)
 
         shifted_img = shifted_img[img.shape[0]:img.shape[0]*2  , img.shape[1]:img.shape[1]*2  , :]
         return shifted_img 
@@ -63,9 +66,18 @@ class Stabilizer2:
         # make black around the image for zoom out
         new_width = img.shape[1] + 8000
         new_height = img.shape[0] + 8000
-        new_img = np.ones((new_height, new_width, img.shape[2]), np.uint8) * 255
-        if img.shape[2] == 4:
-            new_img[:,:,3] = 0
+        if len(img.shape) == 2 :
+            new_img = np.ones((new_height, new_width), np.uint8) * 255
+        else:
+            new_img = np.ones((new_height, new_width, img.shape[2]), np.uint8) * 255
+        
+        if len(img.shape) == 2:
+            new_img[:,:] = 0
+        else:
+            if img.shape[2] == 4:
+                new_img[:,:,3] = 0
+
+
         new_img[4000:new_height-4000, 4000:new_width-4000] = img
 
         current_height = bb['ymax'] - bb['ymin']
@@ -74,8 +86,8 @@ class Stabilizer2:
         car_center_x = int((bb['xmax'] + bb['xmin']) / 2) + 4000
         car_center_y = int((bb['ymax'] +bb['ymin']) / 2) + 4000
 
-        cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LINEAR)
+        cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2)]
+        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=INTERPOLATION_METHOD)
 
 
 
@@ -114,7 +126,7 @@ class Stabilizer2:
         car_center_y = int((bb['ymax'] + bb['ymin']) / 2) + img.shape[0]
 
         cut_img = new_img[int(car_center_y - cut_size_y / 2):int(car_center_y + cut_size_y / 2) , int(car_center_x - cut_size_x / 2):int(car_center_x + cut_size_x / 2),:]
-        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=cv2.INTER_LINEAR)
+        return   cv2.resize(cut_img, ( img.shape[1] , img.shape[0]), interpolation=INTERPOLATION_METHOD)
 
 
 
@@ -144,12 +156,13 @@ class Stabilizer2:
         height, width = img.shape[:2]
         rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), angle, 1)
 
-        if img.shape[2] == 4:
-            borderValue = (255,255,255,0)
+        if len(img.shape) == 2:
+            borderValue = 0
         else:
-            borderValue = (255,255,255)
+            if img.shape[2] == 4:
+                borderValue = (255,255,255,0)
 
-        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_LINEAR)
+        rotated_image = cv2.warpAffine(img, rotation_matrix, (width, height) , borderValue = borderValue , flags=INTERPOLATION_METHOD)
         return rotated_image
 
 
@@ -177,7 +190,7 @@ class Stabilizer2:
         else:
             borderValue = (255,255,255)
 
-        rotated_image = cv2.warpAffine(img1, rotation_matrix, (width, height) , borderValue = borderValue , flags=cv2.INTER_LINEAR)
+        rotated_image = cv2.warpAffine(img1, rotation_matrix, (width, height) , borderValue = borderValue , flags=INTERPOLATION_METHOD)
 
         rotated_image = rotated_image[img.shape[0]:img.shape[0]*2  , img.shape[1]:img.shape[1]*2  , :]
 
@@ -224,28 +237,43 @@ class Stabilizer2:
             raise Exception("stab run method Exception - > read json file",e)
 
         try:
-            img = cv2.imread(img_address , cv2.IMREAD_UNCHANGED)  
+            img = cv2.imread(img_address , cv2.IMREAD_UNCHANGED) 
+            _, mask = cv2.threshold(img[:,:,3], 2, 255, cv2.THRESH_BINARY)
+
+
             if mode == 0 or mode == 3:
                 img1 = self.rotate_image0(img , -angle)
                 img1 = self.centerizer0(img1 , shift_X , shift_Y)
                 img1 = self.zoomIN_zoomOut0(img1 , yolo_after_centerizer ,yaw , height_fraction , yolo_after_centerizer)
+
+                msk1 = self.rotate_image0(mask , -angle)
+                msk1 = self.centerizer0(msk1 , shift_X , shift_Y)
+                msk1 = self.zoomIN_zoomOut0(msk1 , yolo_after_centerizer ,yaw , height_fraction , yolo_after_centerizer)
                 # img1 = self.shiftingUp( img1 , yaw)
             if mode == 1 or mode == 2 :
                 img1 = self.rotate_image1(img , -angle)
                 img1 = self.centerizer1(img1 , shift_X , shift_Y)
                 img1 = self.zoomIN_zoomOut1(img1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)  
 
-            img1[:,:,3] = cv2.threshold(img1[:,:,3], 254, 255, cv2.THRESH_BINARY)[1]
-            
-            # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
-            # img1[:,:,3] = cv2.erode(img1[:,:,3], kernel)
+                msk1 = self.rotate_image1(mask , -angle)
+                msk1 = self.centerizer1(msk1 , shift_X , shift_Y)
+                msk1 = self.zoomIN_zoomOut1(msk1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)
+
+            trancparency = img1[:,:,3] # np.zeros((msk1.shape[0] , msk1.shape[1]))
+            l = np.where( ((msk1 > 0) & (msk1<255))) 
+
+            trancparency[l] = 0
+            img1[:,:,3] = trancparency
             cv2.imwrite(output_address , img1) 
+    
 
         except Exception as e :
             raise Exception("stab run method Exception",e)
         
         return True
         
+
+
 
 
 
