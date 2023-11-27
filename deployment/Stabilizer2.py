@@ -51,8 +51,8 @@ class Stabilizer2:
         if len(img.shape) == 2:
             borderValue = 0
         else:
-            if img.shape[2] == 4:
-                borderValue = (255,255,255,0)
+            if img.shape[2] == 3:
+                borderValue = (255,255,255)
 
         # Apply the transformation to the image
         shifted_img = cv2.warpAffine(img1, M, (img1.shape[1], img1.shape[0]) ,  borderValue = borderValue , flags=INTERPOLATION_METHOD)
@@ -220,10 +220,37 @@ class Stabilizer2:
         return np.array(img1)
 
 
+    def scale_side_angles(self , yaw):
+
+        x = np.linspace(0, 360, 360)
+        a0 , a1 , a2 , a3 = 70 , 110 , 250 , 290
+        y =  -((np.sin((x - 45) / 180 * 2 * np.pi) ) )*0.9 + 1.77
+        y[:] = 1
+
+        y[a0:int((a1+a0)/2)] = np.linspace(1, 0.95, int((a1-a0)/2) )
+        y[int((a1+a0)/2):a1] = np.linspace(0.95 , 1 , int((a1-a0)/2) )
+        y[a2:int((a3+a2)/2)] = np.linspace(1, 0.95, int((a3-a2)/2) )
+        y[int((a3+a2)/2):a3] = np.linspace(0.95 , 1 , int((a3-a2)/2) )
+        y+= 0.05
+        return y[int(yaw)]
+
+
+    def paste_img1_to_img2_with_alpha(self , img1, img2):
+        img2 = cv2.imread(img2)
+        img1 = Image.fromarray(img1)
+        img2 = Image.fromarray(img2)
+        img1 = img1.convert("RGBA")
+        img2 = img2.convert("RGBA")
+        # img2 = Image.new('RGB', img2.size, (255, 255, 255))
+        img1 = img1.resize(img2.size)
+        img2.paste(img1, (0,0), img1)
+        img2 = np.array(img2)
+        return cv2.cvtColor(img2, cv2.COLOR_RGBA2RGB)
+
  
 
 
-    def run(self , img_address , json_address ,  output_address ):  # Done: return True  Failed: throw exception
+    def run(self , img_address , json_address ,  output_address  , attach_bgr=False):  # Done: return True  Failed: throw exception
         try:
             dict = self.read_dict_from_json(json_address)
             angle = eval(dict["angle"])
@@ -238,32 +265,36 @@ class Stabilizer2:
 
         try:
             img = cv2.imread(img_address , cv2.IMREAD_UNCHANGED) 
-            _, mask = cv2.threshold(img[:,:,3], 2, 255, cv2.THRESH_BINARY)
+
 
 
             if mode == 0 or mode == 3:
+                new_height_fraction = self.scale_side_angles(yaw) * height_fraction
+
+
+                _, mask = cv2.threshold(img[:,:,3], 2, 255, cv2.THRESH_BINARY)
                 img1 = self.rotate_image0(img , -angle)
                 img1 = self.centerizer0(img1 , shift_X , shift_Y)
-                img1 = self.zoomIN_zoomOut0(img1 , yolo_after_centerizer ,yaw , height_fraction , yolo_after_centerizer)
+                img1 = self.zoomIN_zoomOut0(img1 , yolo_after_centerizer ,yaw , new_height_fraction , yolo_after_centerizer)
+                # img1 = self.shiftingUp( img1 , yaw)
 
                 msk1 = self.rotate_image0(mask , -angle)
                 msk1 = self.centerizer0(msk1 , shift_X , shift_Y)
-                msk1 = self.zoomIN_zoomOut0(msk1 , yolo_after_centerizer ,yaw , height_fraction , yolo_after_centerizer)
-                # img1 = self.shiftingUp( img1 , yaw)
+                msk1 = self.zoomIN_zoomOut0(msk1 , yolo_after_centerizer ,yaw , new_height_fraction , yolo_after_centerizer)
+                trancparency = img1[:,:,3] # np.zeros((msk1.shape[0] , msk1.shape[1]))
+                l = np.where( ((msk1 > 0) & (msk1<255))) 
+                trancparency[l] = 0
+                img1[:,:,3] = trancparency
+
+                if attach_bgr:
+                    img1 = self.paste_img1_to_img2_with_alpha(img1 , "0.jpg")
+                
             if mode == 1 or mode == 2 :
                 img1 = self.rotate_image1(img , -angle)
                 img1 = self.centerizer1(img1 , shift_X , shift_Y)
                 img1 = self.zoomIN_zoomOut1(img1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)  
 
-                msk1 = self.rotate_image1(mask , -angle)
-                msk1 = self.centerizer1(msk1 , shift_X , shift_Y)
-                msk1 = self.zoomIN_zoomOut1(msk1 , yolo_after_centerizer , height_fraction , yolo_after_centerizer)
 
-            trancparency = img1[:,:,3] # np.zeros((msk1.shape[0] , msk1.shape[1]))
-            l = np.where( ((msk1 > 0) & (msk1<255))) 
-
-            trancparency[l] = 0
-            img1[:,:,3] = trancparency
             cv2.imwrite(output_address , img1) 
     
 
