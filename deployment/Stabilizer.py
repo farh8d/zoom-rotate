@@ -71,7 +71,7 @@ class Stabilizer:
 
 
         # car bounding box doesnt violate image axis
-        if (dict["xmin"] < img.shape[1] * 0.03) or (dict["xmax"] > img.shape[1] * 0.97) or (dict["ymin"] < img.shape[0] * 0.03) or (dict["ymax"] > img.shape[0] * 0.97):
+        if (dict["xmin"] < img.shape[1] * 0.01) or (dict["xmax"] > img.shape[1] * 0.99) or (dict["ymin"] < img.shape[0] * 0.01) or (dict["ymax"] > img.shape[0] * 0.99):
             return None
 
         if ((dict["xmax"] - dict["xmin"]) < img.shape[1] * 0.2) and ((dict["ymax"] - dict["ymin"]) < img.shape[0] * 0.2) :

@@ -269,7 +269,10 @@ class Stabilizer2:
 
 
             if mode == 0 or mode == 3:
-                new_height_fraction = self.scale_side_angles(yaw) * height_fraction
+                if yaw is not None:
+                    new_height_fraction = self.scale_side_angles(yaw) * height_fraction
+                else:
+                    new_height_fraction = 1 * height_fraction
 
 
                 _, mask = cv2.threshold(img[:,:,3], 2, 255, cv2.THRESH_BINARY)
