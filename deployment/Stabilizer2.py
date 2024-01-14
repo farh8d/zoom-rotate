@@ -269,7 +269,7 @@ class Stabilizer2:
 
 
             if mode == 0 or mode == 3:
-                if yaw is not None:
+                if False:  # if yaw is not None:
                     new_height_fraction = self.scale_side_angles(yaw) * height_fraction
                 else:
                     new_height_fraction = 1 * height_fraction
